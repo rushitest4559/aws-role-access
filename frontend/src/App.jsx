@@ -1,9 +1,60 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 import React from 'react';
 import { STSClient, AssumeRoleWithWebIdentityCommand } from '@aws-sdk/client-sts';
+
+// Add Google Fonts import to the document head
+if (!document.getElementById('google-font-roboto')) {
+  const link = document.createElement('link');
+  link.id = 'google-font-roboto';
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap';
+  document.head.appendChild(link);
+}
+
+const appStyle = {
+  fontFamily: 'Roboto, sans-serif',
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '0',
+  margin: '0',
+};
+
+const cardStyle = {
+  background: '#fff',
+  borderRadius: '16px',
+  boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+  padding: '2.5em 2em',
+  minWidth: '340px',
+  maxWidth: '90vw',
+  marginTop: '2em',
+  textAlign: 'center',
+};
+
+const buttonStyle = {
+  background: 'linear-gradient(90deg, #4285F4 0%, #34A853 100%)',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '8px',
+  fontSize: '1.1em',
+  fontWeight: '700',
+  padding: '0.8em 2em',
+  margin: '1.5em 0 0 0',
+  cursor: 'pointer',
+  boxShadow: '0 2px 8px rgba(66,133,244,0.15)',
+  transition: 'background 0.2s',
+};
+
+const avatarStyle = {
+  borderRadius: '50%',
+  width: '64px',
+  height: '64px',
+  margin: '1em auto',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+};
 
 function App() {
   const [user, setUser] = useState(null);
@@ -58,60 +109,58 @@ function App() {
       });
       window.google.accounts.id.renderButton(
         document.getElementById('google-signin'),
-        { theme: 'outline', size: 'large' }
+        { theme: 'outline', size: 'large', width: 300 }
       );
     };
     document.body.appendChild(script);
   }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        {user ? (
-          <div>
-            <h2>Welcome, {user.name}</h2>
-            <p>Email: {user.email}</p>
-            <img src={user.picture} alt="Profile" style={{ borderRadius: '50%' }} />
-            <hr />
-            <h3>AWS Console Access</h3>
-            {awsCreds ? (
-              awsCreds.error ? (
-                <div style={{ color: 'red' }}>Error: {awsCreds.error}</div>
-              ) : (
-                <button
-                  onClick={async () => {
-                    setConsoleLoading(true);
-                    const url = await getConsoleUrl(awsCreds);
-                    window.location.href = url;
-                  }}
-                  disabled={consoleLoading}
-                  style={{ fontSize: '1.2em', padding: '0.5em 1.5em', marginTop: '1em' }}
-                >
-                  {consoleLoading ? 'Opening Console...' : 'Open AWS Console'}
-                </button>
-              )
-            ) : (
-              <div>Requesting AWS credentials...</div>
-            )}
-          </div>
-        ) : (
-          <div id="google-signin"></div>
+    <div style={appStyle}>
+      <div style={{ width: '100%', maxWidth: 420 }}>
+        {user && awsCreds && !awsCreds.error && (
+          <button
+            style={buttonStyle}
+            onClick={async () => {
+              setConsoleLoading(true);
+              const url = await getConsoleUrl(awsCreds);
+              window.location.href = url;
+            }}
+            disabled={consoleLoading}
+          >
+            {consoleLoading ? 'Opening AWS Console...' : 'Open AWS Console'}
+          </button>
         )}
+        <div style={cardStyle}>
+          {!user && (
+            <>
+              <h2 style={{ fontWeight: 700, marginBottom: '1.2em', color: '#222' }}>Sign in with Google</h2>
+              <div id="google-signin" style={{ display: 'flex', justifyContent: 'center' }}></div>
+            </>
+          )}
+          {user && (
+            <>
+              <img src={user.picture} alt="Profile" style={avatarStyle} />
+              <h2 style={{ margin: '0.5em 0 0.2em 0', fontWeight: 700 }}>{user.name}</h2>
+              <div style={{ color: '#666', fontSize: '1em', marginBottom: '1em' }}>{user.email}</div>
+              <hr style={{ margin: '1.5em 0' }} />
+              <h3 style={{ color: '#4285F4', margin: '0 0 1em 0', fontWeight: 700 }}>AWS Console Access</h3>
+              {awsCreds ? (
+                awsCreds.error ? (
+                  <div style={{ color: 'red', fontWeight: 500 }}>Error: {awsCreds.error}</div>
+                ) : null
+              ) : (
+                <div style={{ color: '#888' }}>Requesting AWS credentials...</div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <footer style={{ marginTop: '3em', color: '#888', fontSize: '0.95em' }}>
+        Powered by Google OAuth2 & AWS Federation
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
