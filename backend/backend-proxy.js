@@ -33,5 +33,9 @@ app.post('/federation-url', async (req, res) => {
   }
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Backend is running' });
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Federation proxy running on port ${PORT}`)); 
